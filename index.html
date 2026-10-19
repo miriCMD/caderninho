@@ -224,6 +224,18 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
 .notice.out{opacity:0;transform:translateX(24px)}
 @keyframes noticeIn{from{opacity:0;transform:translateX(24px)}}
 
+
+/* rotina guiada — cronograma flexível */
+.routineCard{margin:0 0 14px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.routineIntro{color:var(--muted);margin:-3px 0 14px}.routineFields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.routineFields .wide{grid-column:span 2}
+.routineActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.routinePlan{margin-top:16px;display:grid;gap:8px}
+.planItem{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 12px;background:var(--solid);border:1px solid var(--border);border-radius:13px}
+.planItem input{width:19px;height:19px;margin:4px 0 0;accent-color:var(--accent)}.planItem.done{opacity:.65}.planItem.done .planTitle{text-decoration:line-through}
+.planTime{font-weight:700;color:var(--accent);white-space:nowrap}.planTitle{font-weight:700}.planDesc{font-size:15px;color:var(--muted)}
+.tomorrowPlan{margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--soft)}.tomorrowPlan h3{font:700 25px/1.1 var(--title);margin:0 0 8px}.tomorrowPlan ul{margin:6px 0 0;padding-left:22px}
+@media(max-width:850px){.routineFields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.routineFields{grid-template-columns:1fr}.routineFields .wide{grid-column:span 1}.planItem{grid-template-columns:24px minmax(0,1fr)}.planTime{grid-column:2}}
+
 @media(max-width:850px),(pointer:coarse){.fsBtn{display:inline-flex}}
 @media(max-width:850px){
  :root{--ml:26px}
@@ -293,6 +305,31 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
  <span class="qHint">toque para outra frase ✦</span>
 </section>
 
+<section class="routineCard" id="routineCard">
+ <h2>Minha rotina de hoje ✦</h2>
+ <p class="routineIntro">Ajuste conforme sua realidade. O plano se adapta ao horário, ao trabalho e à energia do dia — sem culpa quando surgir um imprevisto.</p>
+ <div class="routineFields">
+  <div><label for="routineNow">Horário atual</label><input id="routineNow" type="time" value="16:34"></div>
+  <div><label for="routineWorkEnd">Termino o trabalho às</label><input id="routineWorkEnd" type="time" value="19:00"></div>
+  <div><label for="routineStatus">Hoje eu...</label><select id="routineStatus"><option value="working">ainda estou trabalhando</option><option value="free">já estou livre</option><option value="tired">estou muito cansada</option></select></div>
+  <div><label for="routineStudied">Estudo feito hoje</label><select id="routineStudied"><option value="none">ainda não estudei</option><option value="some">já estudei um pouco</option><option value="done">já fiz meu bloco principal</option></select></div>
+ </div>
+ <div class="routineActions"><button class="primary" onclick="buildRoutine()">Montar / atualizar meu plano</button><button onclick="routineUseNow()">Usar horário atual</button><button onclick="routineResetChecks()">Desmarcar tarefas</button></div>
+ <div id="routineSummary" class="hint" aria-live="polite"></div>
+ <div id="routinePlan" class="routinePlan"></div>
+ <div class="tomorrowPlan"><h3>Modelo para um dia normal (a partir de amanhã)</h3>
+  <ul>
+   <li><b>07:30–08:00:</b> exercício leve ou treino planejado.</li>
+   <li><b>08:30–09:20:</b> Conhecimentos Específicos — teoria curta + questões.</li>
+   <li><b>09:30–10:20:</b> Específicos / Constitucional, conforme o plano do dia.</li>
+   <li><b>10:35–11:25:</b> outra matéria do edital.</li>
+   <li><b>11:35–12:25:</b> questões, correção e caderno de erros.</li>
+   <li><b>20:00–20:30:</b> revisão curta opcional, depois do trabalho e do jantar.</li>
+  </ul>
+  <p class="hint">Se a manhã desandar: faça 2 blocos prioritários. Num dia muito difícil, 25 minutos já mantêm o fio da rotina.</p>
+ </div>
+</section>
+
 <section class="dashboard">
  <div class="card" id="timerCard" data-state="idle">
   <div class="timerTop">
@@ -313,6 +350,8 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
     <span id="timerStatus" class="pill"></span>
     <label for="timerSubject">Estudando agora</label>
     <select id="timerSubject" onchange="setTimerSubject(this.value)"></select>
+    <label for="timerTask" style="margin-top:10px">Tarefa específica deste bloco</label>
+    <input id="timerTask" type="text" maxlength="140" placeholder="Ex.: revisar o resumo e responder 5 questões">
     <div class="timerBtns">
      <button class="primary big" id="startBtn" onclick="startPause()">▶ Iniciar</button>
      <button class="ok" id="saveBtn" onclick="saveSession()">✓ Salvar<span class="hideSm"> sessão</span></button>
@@ -700,7 +739,7 @@ async function saveSession(){
  const ms=timerElapsed();
  if(ms<1000){notify("Nada para salvar","Inicie o cronômetro primeiro.","warn");return}
  const minutes=Math.max(1,Math.round(ms/60000));
- const rec={date:localISO(new Date(Date.now()-ms)),subject:$("timerSubject").value,minutes,questions:0,correct:0,notes:"Sessão pelo cronômetro"};
+ const rec={date:localISO(new Date(Date.now()-ms)),subject:$("timerSubject").value,minutes,questions:0,correct:0,notes:$("timerTask").value.trim()||"Sessão pelo cronômetro"};
  if(!await ask({title:"Salvar sessão?",text:ms<60000?"A sessão tem menos de 1 minuto e será salva como 1 min.":"",lines:recordLines(rec).slice(0,3),ok:"Salvar sessão"}))return;
  addRecord(rec);resetTimer();notify("Sessão salva",`${fmtMin(minutes)} de ${shortSub(rec.subject)}`);
 }
@@ -1030,5 +1069,58 @@ else onAuthStateChanged(auth,u=>{
  subscribe();
 });
 </script>
+
+<script>
+(function(){
+ const KEY='ctbaRoutinePlannerV1';
+ const $r=id=>document.getElementById(id);
+ const pad=n=>String(n).padStart(2,'0');
+ const toM=t=>{if(!t||!t.includes(':'))return 0;const [h,m]=t.split(':').map(Number);return h*60+m};
+ const fromM=n=>{n=((Math.round(n)%1440)+1440)%1440;return pad(Math.floor(n/60))+':'+pad(n%60)};
+ const fmt=n=>fromM(n);
+ function state(){return {now:$r('routineNow').value,workEnd:$r('routineWorkEnd').value,status:$r('routineStatus').value,studied:$r('routineStudied').value,checks:JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}}
+ function save(){const s=state();localStorage.setItem(KEY,JSON.stringify({now:s.now,workEnd:s.workEnd,status:s.status,studied:s.studied}));}
+ function load(){try{const raw=localStorage.getItem(KEY);const s=JSON.parse(raw||'{}');if(s.now)$r('routineNow').value=s.now;else {const d=new Date();$r('routineNow').value=pad(d.getHours())+':'+pad(d.getMinutes())}if(s.workEnd)$r('routineWorkEnd').value=s.workEnd;if(s.status)$r('routineStatus').value=s.status;if(s.studied)$r('routineStudied').value=s.studied}catch(e){} }
+ function item(id,time,title,desc){const checks=state().checks;return `<label class="planItem ${checks[id]?'done':''}"><input type="checkbox" ${checks[id]?'checked':''} onchange="routineToggle('${id}',this.checked)"><span><span class="planTitle">${title}</span><br><span class="planDesc">${desc}</span></span><span class="planTime">${time}</span></label>`}
+ window.routineToggle=(id,v)=>{let c={};try{c=JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}catch(e){}c[id]=v;localStorage.setItem(KEY+'checks',JSON.stringify(c));buildRoutine(false)};
+ window.routineUseNow=()=>{const d=new Date();$r('routineNow').value=pad(d.getHours())+':'+pad(d.getMinutes());buildRoutine()};
+ window.routineResetChecks=()=>{localStorage.removeItem(KEY+'checks');buildRoutine(false)};
+ window.buildRoutine=(persist=true)=>{
+  if(persist)save();
+  const s=state(),now=toM(s.now),end=toM(s.workEnd),items=[];let summary='';
+  const add=(id,a,b,title,desc)=>items.push(item(id,fmt(a)+'–'+fmt(b),title,desc));
+  if(s.status==='working'&&now<end){
+   summary=`Plano realista para hoje: você está no trabalho até ${fmt(end)}. Não precisa encaixar estudo escondido no expediente.`;
+   add('afterwork',end,end+60,'Descompressão + jantar','Termine o trabalho, coma e respire um pouco antes de cobrar algo de si.');
+   if(s.studied==='done') add('review',end+60,end+80,'Revisão leve (20 min)','Releia erros ou explique em voz alta o conteúdo de ontem. Pare ao terminar.');
+   else if(s.status!=='tired') add('review',end+60,end+90,'Bloco curto de estudo (25–30 min)','Como hoje ainda não teve bloco principal, faça uma revisão guiada ou 5 questões. Se estiver exausta, reduza para 10 minutos.');
+   else add('minimum',end+60,end+85,'Mínimo gentil (25 min, opcional)','Se houver energia, faça 5 questões. Se não houver, descanso também faz parte do plano.');
+   add('leisure',end+90,end+150,'Lazer e preparação para amanhã','Escolha algo agradável e deixe o material de estudo pronto. Ajuste o horário se precisar.');
+  } else if(s.status==='tired'){
+   summary='Hoje é um dia de energia baixa. A meta é manter o vínculo com o plano, não compensar tudo.';
+   add('tiny',now,now+25,'Bloco mínimo (até 25 min)','5 questões fáceis ou revisão de erros. Pode parar antes se estiver no limite.');
+   add('rest',now+25,now+85,'Descanso sem culpa','Comer, tomar banho e fazer algo tranquilo. Sono e recuperação contam.');
+  } else {
+   summary='Você está livre. Vamos usar o tempo disponível sem ignorar alimentação, pausas e descanso.';
+   if(s.studied==='done'){
+    add('review',now,now+25,'Revisão curta','Reveja erros e pontos-chave; não precisa repetir todo o conteúdo.');
+    add('rest',now+25,now+55,'Pausa de verdade','Levante, beba água e descanse os olhos.');
+   } else {
+    add('block1',now,now+40,'Bloco 1 — foco principal','Conhecimentos Específicos: mini teoria + 5 questões.');
+    add('break1',now+40,now+50,'Pausa','Água, banheiro e alongamento breve.');
+    add('block2',now+50,now+80,'Bloco 2 — correção','Corrija as questões e anote somente os erros importantes.');
+   }
+   add('winddown',now+90,now+120,'Encerrar e preparar amanhã','Registre o que fez, separe o material e preserve seu horário de descanso.');
+  }
+  if(s.studied==='some'&&s.status!=='working'&&s.status!=='tired') summary+=' Você já estudou um pouco: considere o primeiro bloco como revisão, sem recomeçar do zero.';
+  $r('routineSummary').textContent=summary;
+  $r('routinePlan').innerHTML=items.join('');
+ };
+ load();
+ // O campo vem preenchido com o horário informado na conversa; se abrir em outro dia, o botão “Usar horário atual” atualiza.
+ buildRoutine(false);
+})();
+</script>
+
 </body>
 </html>
