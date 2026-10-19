@@ -247,6 +247,19 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
 .planItem input{width:22px;height:22px;margin:0;padding:0;justify-self:end;accent-color:var(--accent)}
 .planItem.done{opacity:.6}.planItem.done .planTitle{text-decoration:line-through}
 .tomorrowPlan{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--soft)}.tomorrowPlan h3{font:700 25px/1.1 var(--title);margin:0 0 8px}.tomorrowPlan ul{margin:6px 0 0;padding-left:22px}
+.planItem.now{border-color:var(--accent);box-shadow:0 0 0 3px var(--soft)}
+.planItem.now .planTime{background:var(--accent)}.planItem.now .planTime b,.planItem.now .planTime small{color:var(--onAccent)}
+.planItem.past{opacity:.55}.planItem.opt{border-style:dashed}
+.planSlim{display:grid;grid-template-columns:78px minmax(0,1fr);gap:12px;align-items:center;padding:3px 10px;color:var(--muted);font-size:16px}
+.planSlim .slimTime{text-align:center;font-weight:700;font-size:15px}
+.planSlim small{color:var(--faint);font-size:13px}
+.planSlim.now{background:var(--soft);border-radius:12px;padding:8px 10px;color:var(--ink);font-weight:700}
+.planSlim.past{opacity:.5}
+.planEmpty{padding:16px;text-align:center;color:var(--muted);background:var(--solid);border:1px dashed var(--dash);border-radius:14px}
+.nowBadge,.optTag{font-style:normal;font-size:12px;font-weight:400;padding:1px 8px;border-radius:99px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+.nowBadge{background:var(--accent);color:var(--onAccent)}.optTag{background:var(--soft);color:var(--muted)}
+.pastToggle{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:15px;color:var(--muted);cursor:pointer}
+.pastToggle input{width:18px;height:18px;margin:0;padding:0;accent-color:var(--accent)}
 @media(max-width:850px){.routineFields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){
  .routineCard{padding:16px 14px}
@@ -254,6 +267,7 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
  .routineActions{display:grid;grid-template-columns:1fr 1fr}.routineActions .primary{grid-column:1/-1}
  .planItem{grid-template-columns:62px minmax(0,1fr) 24px;gap:10px;padding:9px 12px 9px 9px}
  .planTime b{font-size:22px}.planTime small{font-size:12px}
+ .planSlim{grid-template-columns:62px minmax(0,1fr);gap:10px;padding:3px 9px}
 }
 
 @media(max-width:850px),(pointer:coarse){.fsBtn{display:inline-flex}}
@@ -336,22 +350,23 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
  <div class="routineFields">
   <div><label for="routineNow">Horário atual</label><select id="routineNow"></select></div>
   <div><label for="routineWorkEnd">Termino o trabalho às</label><select id="routineWorkEnd"></select></div>
-  <div class="full"><label for="routineStatus">Hoje eu...</label><select id="routineStatus"><option value="working">ainda estou trabalhando</option><option value="free">já estou livre</option><option value="tired">estou muito cansada</option></select></div>
+  <div class="full"><label for="routineStatus">Como está o dia hoje</label><select id="routineStatus"><option value="normal">Dia normal (4 blocos)</option><option value="tight">Dia apertado (2 blocos)</option><option value="bad">Dia péssimo (mínimo)</option></select></div>
   <div class="full"><label for="routineStudied">Estudo feito hoje</label><select id="routineStudied"><option value="none">ainda não estudei</option><option value="some">já estudei um pouco</option><option value="done">já fiz meu bloco principal</option></select></div>
  </div>
  <div class="routineActions"><button class="primary" onclick="buildRoutine()">Montar / atualizar meu plano</button><button onclick="routineUseNow()">Usar horário atual</button><button onclick="routineResetChecks()">Desmarcar tarefas</button></div>
  <div id="routineSummary" class="hint" aria-live="polite"></div>
+ <label class="pastToggle"><input type="checkbox" id="routineShowPast"> mostrar também o que já passou</label>
  <div id="routinePlan" class="routinePlan"></div>
- <div class="tomorrowPlan"><h3>Modelo para um dia normal (a partir de amanhã)</h3>
+ <div class="tomorrowPlan"><h3>Regras do modo guerra</h3>
   <ul>
-   <li><b>07:30–08:00:</b> exercício leve ou treino planejado.</li>
-   <li><b>08:30–09:20:</b> Conhecimentos Específicos — teoria curta + questões.</li>
-   <li><b>09:30–10:20:</b> Específicos / Constitucional, conforme o plano do dia.</li>
-   <li><b>10:35–11:25:</b> outra matéria do edital.</li>
-   <li><b>11:35–12:25:</b> questões, correção e caderno de erros.</li>
-   <li><b>20:00–20:30:</b> revisão curta opcional, depois do trabalho e do jantar.</li>
+   <li><b>Cada bloco:</b> mini teoria (10–15 min) → 5 questões → correção → mini teoria → 5 questões mais difíceis.</li>
+   <li><b>5/5</b> sobe o nível; <b>4/5</b> sobe um pouco; <b>2/5</b> reforça só aquele pedaço.</li>
+   <li><b>Revisão espaçada:</b> amanhã, +3, +7 e +15 dias.</li>
+   <li><b>Simulados:</b> 24/10 (20 questões), 31/10 (30), 07/11 (40) e depois semanal; dois completos em dezembro.</li>
+   <li><b>Dia apertado:</b> 2 blocos prioritários + 10 min de revisão. <b>Dia péssimo:</b> 1 bloco de 25 min e descanso sem culpa.</li>
+   <li><b>Sono:</b> das 23:00 às 07:00, sem sacrificar o sono para “estudar mais”.</li>
   </ul>
-  <p class="hint">Se a manhã desandar: faça 2 blocos prioritários. Num dia muito difícil, 25 minutos já mantêm o fio da rotina.</p>
+  <p class="hint">11 e 12/12 são de viagem: sem carga pesada, só leitura leve do caderno de erros, se der.</p>
  </div>
 </section>
 
@@ -420,9 +435,10 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
 
  <div class="card">
   <h2>Plano em 3 fases</h2>
-  <div class="phase" data-month="9"><b>OUTUBRO</b> <span class="tag">estudo reverso</span> diagnóstico → questões → teoria → correção → repetição.</div>
-  <div class="phase" data-month="10"><b>NOVEMBRO</b> <span class="tag">consolidação</span> volume de questões, FAFIPA, revisão espaçada e simulados.</div>
-  <div class="phase" data-month="11"><b>DEZEMBRO</b> <span class="tag">hiper revisão</span> erros, leis, pontos fracos e simulados; pouca matéria nova.</div>
+  <div class="phase" data-start="2026-10-19" data-end="2026-11-09"><b>19/10 – 09/11</b> <span class="tag">construção agressiva</span> base rápida + questões todos os dias.</div>
+  <div class="phase" data-start="2026-11-10" data-end="2026-11-30"><b>10/11 – 30/11</b> <span class="tag">consolidação</span> mais questões estilo FAFIPA e simulados parciais.</div>
+  <div class="phase" data-start="2026-12-01" data-end="2026-12-10"><b>01/12 – 10/12</b> <span class="tag">hiper revisão</span> erros, leis, simulados completos e revisão rápida.</div>
+  <div class="phase" data-start="2026-12-11" data-end="2026-12-13"><b>11/12 – 13/12</b> <span class="tag">viagem e prova</span> sem carga pesada; dia 13 é a prova de Curitiba.</div>
  </div>
 </section>
 
@@ -1072,7 +1088,7 @@ function init(){
  $("ticks").innerHTML=t;
  $("date").value=localISO();setTodayLabel();applyPrefs();randomQuote();
  setupFullscreen();makeTouchIcon();
- const mo=new Date().getMonth();document.querySelectorAll(".phase").forEach(p=>p.classList.toggle("now",+p.dataset.month===mo));
+ const td=localISO();document.querySelectorAll(".phase").forEach(p=>p.classList.toggle("now",td>=p.dataset.start&&td<=p.dataset.end));
  render();updateTimerUI();
  setInterval(()=>{if(localISO()!==dayKey){dayKey=localISO();setTodayLabel();render()}},60000);
  document.addEventListener("visibilitychange",updateTimerUI);
@@ -1100,61 +1116,192 @@ else onAuthStateChanged(auth,u=>{
 
 <script>
 (function(){
- const KEY='ctbaRoutinePlannerV1';
+ const KEY='ctbaRoutinePlannerV2';
  const $r=id=>document.getElementById(id);
  const pad=n=>String(n).padStart(2,'0');
- const toM=t=>{if(!t||!t.includes(':'))return 0;const [h,m]=t.split(':').map(Number);return h*60+m};
+ const toM=t=>{if(!t||t.indexOf(':')<0)return 0;const p=t.split(':').map(Number);return p[0]*60+p[1]};
  const fromM=n=>{n=((Math.round(n)%1440)+1440)%1440;return pad(Math.floor(n/60))+':'+pad(n%60)};
- const fmt=n=>fromM(n);
+ const fmt=fromM;
  const nowStr=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
- const fillTimes=sel=>{let h='';for(let m=0;m<1440;m+=5)h+=`<option value="${fromM(m)}">${fromM(m)}</option>`;sel.innerHTML=h};
+ const isoOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+ const readChecks=()=>{try{return JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}catch(e){return {}}};
+ const writeChecks=c=>{try{localStorage.setItem(KEY+'checks',JSON.stringify(c))}catch(e){}};
+ const fillTimes=(sel,extra)=>{let h=extra||'';for(let m=0;m<1440;m+=5)h+=`<option value="${fromM(m)}">${fromM(m)}</option>`;sel.innerHTML=h};
  const setSel=(sel,v)=>{if(![...sel.options].some(o=>o.value===v)){const op=[...sel.options],i=op.findIndex(x=>x.value>v);sel.add(new Option(v,v),i<0?null:op[i])}sel.value=v};
  const setNow=()=>setSel($r('routineNow'),nowStr());
- function state(){return {now:$r('routineNow').value,workEnd:$r('routineWorkEnd').value,status:$r('routineStatus').value,studied:$r('routineStudied').value,checks:JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}}
- function save(){const s=state();localStorage.setItem(KEY,JSON.stringify({now:s.now,workEnd:s.workEnd,status:s.status,studied:s.studied}));}
- function load(){fillTimes($r('routineNow'));fillTimes($r('routineWorkEnd'));$r('routineWorkEnd').value='19:00';setNow();try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');if(s.workEnd)setSel($r('routineWorkEnd'),s.workEnd);if(s.status)$r('routineStatus').value=s.status;if(s.studied)$r('routineStudied').value=s.studied}catch(e){} }
- function item(id,time,title,desc){const checks=state().checks;const t=time.split('–');return `<label class="planItem ${checks[id]?'done':''}"><span class="planTime"><b>${t[0]}</b><small>até ${t[1]}</small></span><span class="planBody"><span class="planTitle">${title}</span><span class="planDesc">${desc}</span></span><input type="checkbox" ${checks[id]?'checked':''} onchange="routineToggle('${id}',this.checked)"></label>`}
- window.routineToggle=(id,v)=>{let c={};try{c=JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}catch(e){}c[id]=v;localStorage.setItem(KEY+'checks',JSON.stringify(c));buildRoutine(false)};
+ const hasOpt=(sel,v)=>[...sel.options].some(o=>o.value===v);
+
+ /* ---------- dados da rotina (da conversa do modo guerra) ---------- */
+ const DAYS=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+ const EX={
+  g:{t:'Treino — glúteos e pernas',d:'30 minutos com intensidade moderada, seguindo sua programação específica.'},
+  a:{t:'Aeróbico leve a moderado',d:'30 minutos de aeróbico + condicionamento. Ajuste ao seu ritmo de hoje.'},
+  r:{t:'Recuperação ativa',d:'Caminhada leve ou mobilidade. Sem obrigação de treino intenso.'}
+ };
+ const Q={t:'Questões + correção do dia',d:'10 questões progressivas misturando o que você viu hoje. Corrija e anote só os erros importantes.'};
+ const PLAN={
+  1:{focus:'Administração Pública + Constitucional',ex:EX.g,b:[
+   {t:'Administração Pública — Governo × Administração',d:'Mini teoria (10–15 min): conceito, finalidade e princípios iniciais. Depois 5 questões fáceis.'},
+   {t:'Administração Pública — PODC',d:'Planejamento, Organização, Direção e Controle. Mini teoria, 5 questões e correção.'},
+   {t:'Constitucional — arts. 1º ao 4º',d:'Princípios fundamentais e a ligação com a Administração Pública. Mini teoria + 5 questões.'},Q]},
+  2:{focus:'Direito Administrativo + Português',ex:EX.a,b:[
+   {t:'Direito Administrativo — atos administrativos',d:'Conceito, requisitos e atributos. Mini teoria + 5 questões.'},
+   {t:'Direito Administrativo — poderes e responsabilidade',d:'Poderes da Administração e responsabilidade dos agentes. Mini teoria + 5 questões.'},
+   {t:'Português — interpretação e coesão',d:'Interpretação de texto, coesão e coerência. 5 questões comentadas.'},Q]},
+  3:{focus:'Administração Pública + Legislação',ex:EX.g,b:[
+   {t:'Administração Pública — organização administrativa',d:'Administração direta e indireta e organização do ambiente de trabalho. Mini teoria + 5 questões.'},
+   {t:'Administração Pública — pessoas e orçamento',d:'Gestão de pessoas e noções de orçamento público. Mini teoria + 5 questões.'},
+   {t:'Legislação — Lei Orgânica e Estatuto',d:'Leitura guiada da Lei Orgânica de Curitiba e do Estatuto dos Funcionários, com questões.'},Q]},
+  4:{focus:'Direito Administrativo + Informática',ex:EX.r,b:[
+   {t:'Direito Administrativo — improbidade',d:'Atos, sanções e pegadinhas. Mini teoria + 5 questões.'},
+   {t:'Direito Administrativo — licitações (Lei 14.133)',d:'Princípios, modalidades e contratos. Mini teoria + 5 questões.'},
+   {t:'Informática — Windows, Word e Excel',d:'Conceitos, atalhos e arquivos. 5 questões práticas.'},Q]},
+  5:{focus:'Constitucional + Raciocínio Lógico',ex:EX.g,b:[
+   {t:'Constitucional — art. 5º',d:'Direitos e garantias fundamentais. Mini teoria + 5 questões.'},
+   {t:'Constitucional — arts. 37 a 41',d:'Administração Pública na Constituição. Mini teoria + 5 questões.'},
+   {t:'Raciocínio Lógico — razão, regra de três e porcentagem',d:'Resolver, não decorar: 5 problemas com correção passo a passo.'},Q]},
+  6:{focus:'Revisão + Simulado',ex:EX.a,b:[
+   {t:'Revisão dos erros da semana',d:'Releia o caderno de erros e refaça as questões que errou.'},
+   {t:'Simulado',d:'',sim:true},
+   {t:'Correção do simulado',d:'Corrija com calma e classifique cada erro: não sabia, confundi ou foi desatenção.'},
+   {t:'Caderno de erros',d:'Passe a limpo os erros do simulado e marque as revisões (+3, +7 e +15 dias).'}]},
+  0:{focus:'Revisão leve + caderno de erros',ex:EX.r,b:[
+   {t:'Revisão leve da semana',d:'Releia resumos e leis marcadas, sem cobrança e sem matéria nova.'},
+   {t:'Caderno de erros',d:'Releia os erros da semana e refaça só as questões que errou.'},
+   {t:'Bloco extra — matéria mais fraca',d:'Só se houver energia: 5 questões da matéria em que você mais erra.',opt:true},
+   {t:'Planejar a semana',d:'Veja o foco de cada dia e deixe o material separado.',opt:true}]}
+ };
+ const simN=iso=>iso<='2026-10-24'?20:iso<='2026-10-31'?30:40;
+ function phaseOf(iso){
+  if(iso<'2026-10-19')return '';
+  if(iso<='2026-11-09')return 'Fase 1 · Construção agressiva';
+  if(iso<='2026-11-30')return 'Fase 2 · Consolidação';
+  if(iso<='2026-12-10')return 'Fase 3 · Hiper revisão';
+  if(iso<='2026-12-12')return 'Viagem e preparação';
+  if(iso==='2026-12-13')return 'Dia da prova';
+  return '';
+ }
+ const daysToExam=d=>Math.round((Date.UTC(2026,11,13)-Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
+
+ /* ---------- estado ---------- */
+ function state(){return {now:$r('routineNow').value,workEnd:$r('routineWorkEnd').value,mode:$r('routineStatus').value,studied:$r('routineStudied').value,showPast:$r('routineShowPast').checked}}
+ function save(){const s=state();try{localStorage.setItem(KEY,JSON.stringify({day:isoOf(new Date()),workEnd:s.workEnd,mode:s.mode,studied:s.studied}))}catch(e){}}
+ function load(){
+  fillTimes($r('routineNow'));
+  fillTimes($r('routineWorkEnd'),'<option value="none">Não trabalho hoje</option>');
+  $r('routineWorkEnd').value='19:00';
+  setNow();
+  try{
+   const s=JSON.parse(localStorage.getItem(KEY)||'{}');
+   if(s.workEnd)setSel($r('routineWorkEnd'),s.workEnd);
+   if(s.day===isoOf(new Date())){
+    if(s.mode&&hasOpt($r('routineStatus'),s.mode))$r('routineStatus').value=s.mode;
+    if(s.studied&&hasOpt($r('routineStudied'),s.studied))$r('routineStudied').value=s.studied;
+   }
+  }catch(e){}
+ }
+
+ /* ---------- montagem do dia ---------- */
+ function rowHTML(x,ck){
+  const nowB=x.s==='now'?' <em class="nowBadge">agora</em>':'';
+  if(x.kind==='slim')return `<div class="planSlim ${x.s}"><span class="slimTime">${fmt(x.a)}</span><span class="slimText">${x.t}${x.noEnd?'':` <small>até ${fmt(x.b)}</small>`}${nowB}</span></div>`;
+  const done=ck(x.id);
+  return `<label class="planItem ${x.s} ${x.opt?'opt':''} ${done?'done':''}"><span class="planTime"><b>${fmt(x.a)}</b><small>até ${fmt(x.b)}</small></span><span class="planBody"><span class="planTitle">${x.t}${x.opt?' <em class="optTag">opcional</em>':''}${nowB}</span><span class="planDesc">${x.d}</span></span><input type="checkbox" ${done?'checked':''} onchange="routineToggle('${x.id}',this.checked)"></label>`;
+ }
+ window.routineToggle=(id,v)=>{const c=readChecks(),k=isoOf(new Date())+':'+id;if(v)c[k]=true;else delete c[k];writeChecks(c);buildRoutine(false)};
  window.routineUseNow=()=>{setNow();buildRoutine()};
- window.routineResetChecks=()=>{localStorage.removeItem(KEY+'checks');buildRoutine(false)};
+ window.routineResetChecks=()=>{const c=readChecks(),p=isoOf(new Date())+':';Object.keys(c).forEach(k=>{if(k.indexOf(p)===0)delete c[k]});writeChecks(c);buildRoutine(false)};
+
  window.buildRoutine=(persist=true)=>{
   if(persist)save();
-  const s=state(),now=toM(s.now),end=toM(s.workEnd),items=[];let summary='';
-  const add=(id,a,b,title,desc)=>items.push(item(id,fmt(a)+'–'+fmt(b),title,desc));
-  if(s.status==='working'&&now<end){
-   summary=`Plano realista para hoje: você está no trabalho até ${fmt(end)}. Não precisa encaixar estudo escondido no expediente.`;
-   add('afterwork',end,end+60,'Descompressão + jantar','Termine o trabalho, coma e respire um pouco antes de cobrar algo de si.');
-   if(s.studied==='done') add('review',end+60,end+80,'Revisão leve (20 min)','Releia erros ou explique em voz alta o conteúdo de ontem. Pare ao terminar.');
-   else if(s.status!=='tired') add('review',end+60,end+90,'Bloco curto de estudo (25–30 min)','Como hoje ainda não teve bloco principal, faça uma revisão guiada ou 5 questões. Se estiver exausta, reduza para 10 minutos.');
-   else add('minimum',end+60,end+85,'Mínimo gentil (25 min, opcional)','Se houver energia, faça 5 questões. Se não houver, descanso também faz parte do plano.');
-   add('leisure',end+90,end+150,'Lazer e preparação para amanhã','Escolha algo agradável e deixe o material de estudo pronto. Ajuste o horário se precisar.');
-  } else if(s.status==='tired'){
-   summary='Hoje é um dia de energia baixa. A meta é manter o vínculo com o plano, não compensar tudo.';
-   add('tiny',now,now+25,'Bloco mínimo (até 25 min)','5 questões fáceis ou revisão de erros. Pode parar antes se estiver no limite.');
-   add('rest',now+25,now+85,'Descanso sem culpa','Comer, tomar banho e fazer algo tranquilo. Sono e recuperação contam.');
-  } else {
-   summary='Você está livre. Vamos usar o tempo disponível sem ignorar alimentação, pausas e descanso.';
-   if(s.studied==='done'){
-    add('review',now,now+25,'Revisão curta','Reveja erros e pontos-chave; não precisa repetir todo o conteúdo.');
-    add('rest',now+25,now+55,'Pausa de verdade','Levante, beba água e descanse os olhos.');
-   } else {
-    add('block1',now,now+40,'Bloco 1 — foco principal','Conhecimentos Específicos: mini teoria + 5 questões.');
-    add('break1',now+40,now+50,'Pausa','Água, banheiro e alongamento breve.');
-    add('block2',now+50,now+80,'Bloco 2 — correção','Corrija as questões e anote somente os erros importantes.');
+  const s=state(),now=toM(s.now),date=new Date(),iso=isoOf(date),dow=date.getDay(),P=PLAN[dow],mode=s.mode;
+  let checks=readChecks();
+  const stale=Object.keys(checks).filter(k=>k.indexOf(iso+':')!==0);
+  if(stale.length){stale.forEach(k=>delete checks[k]);writeChecks(checks)}
+  const ck=id=>!!checks[iso+':'+id];
+  const noWork=s.workEnd==='none';
+  const we=noWork?1140:Math.max(toM(s.workEnd),810);
+  const it=[];
+  const slim=(id,a,b,t,o)=>it.push(Object.assign({id,a,b,t,kind:'slim'},o));
+  const main=(id,a,b,t,d,o)=>it.push(Object.assign({id,a,b,t,d,kind:'main'},o));
+  const exam=iso==='2026-12-13',travel=iso==='2026-12-11'||iso==='2026-12-12';
+  let rescue=null;
+
+  if(exam){
+   slim('wake',420,480,'Acordar, comer bem e conferir documento, caneta e água');
+   slim('exam',480,1440,'Prova de Curitiba — confie no que você construiu 💗',{noEnd:true});
+  }else if(travel){
+   slim('wake',420,540,'Acordar com calma');
+   main('lite',540,570,'Leitura leve do caderno de erros','Só se der. Nada de matéria nova; priorize a viagem e o descanso.',{opt:true});
+   slim('trip',570,1320,'Viagem e preparação');
+   slim('sleep',1320,1440,'Dormir cedo',{noEnd:true});
+  }else{
+   slim('wake',420,450,'Acordar e se preparar');
+   main('ex',450,480,P.ex.t,P.ex.d,{opt:mode==='bad'});
+   slim('cafe',480,510,'Café da manhã e organizar a mesa');
+   const bl=P.b.map(x=>x.sim?{t:'Simulado',d:`Simulado de ${simN(iso)} questões, cronometrado e sem consultar nada.`}:x);
+   const B=(i,a,b)=>main('b'+(i+1),a,b,bl[i].t,bl[i].d,{study:true,opt:!!bl[i].opt||(mode==='tight'&&i>=2)});
+   if(mode==='bad'){
+    main('b1',510,535,'Bloco mínimo (25 min) — '+bl[0].t,'Faça só o essencial: 5 questões fáceis ou uma revisão rápida. Pode parar antes se estiver no limite.',{study:true});
+    slim('rest',535,750,'Descanso sem culpa — sono e recuperação também contam');
+   }else{
+    B(0,510,560);slim('p1',560,570,'Pausa');
+    B(1,570,620);slim('p2',620,635,'Pausa e lanche');
+    B(2,635,685);slim('p3',685,695,'Pausa');
+    B(3,695,745);
+    slim('fim',745,750,mode==='tight'?'Revisão rápida (10 min) e anotar erros':'Anotar erros e próximo passo');
    }
-   add('winddown',now+90,now+120,'Encerrar e preparar amanhã','Registre o que fez, separe o material e preserve seu horário de descanso.');
+   slim('lunch',750,810,'Almoço e descanso');
+   if(noWork){
+    slim('free1',810,870,'Tarde livre');
+    main('extra',870,920,'Bloco extra — matéria mais fraca','Se quiser aproveitar a tarde livre: 5 questões da matéria em que você mais erra.',{opt:true});
+    slim('free2',920,we,'Tarde livre');
+   }else slim('work',810,we,'Trabalho');
+
+   const checked=['b1','b2','b3','b4'].filter(ck).length;
+   const lvl=(s.studied==='done'||checked>=2)?'done':(s.studied==='some'||checked===1)?'some':'none';
+   const missed=it.filter(x=>x.study&&!x.opt&&x.b<=now&&!ck(x.id));
+   slim('dinner',we,we+60,'Jantar e desacelerar');
+   let ev=we+60;
+   if(mode==='bad'){
+    main('night',ev,ev+25,'Mínimo gentil (25 min, opcional)','Se houver energia, faça 5 questões fáceis. Se não houver, descansar também faz parte do plano.',{opt:true});ev+=25;
+   }else if(missed.length&&lvl==='none'){
+    const len=mode==='tight'?25:50;
+    main('rescue',ev,ev+len,'Bloco de resgate — '+missed[0].t,'Você ainda não teve bloco principal hoje: mini teoria + 5 questões. Se estiver exausta, reduza para 25 minutos.');rescue=it[it.length-1];ev+=len;
+   }else if(missed.length&&lvl==='some'){
+    main('rescue',ev,ev+30,'Reforço curto (30 min) — '+missed[0].t,'Você já estudou um pouco: complete o que ficou para trás com 5 questões e correção.');ev+=30;
+   }else{
+    main('night',ev,ev+30,'Revisão dos erros ou questões curtas','Opcional: 30 minutos para fixar o que viu hoje. Se o dia foi pesado, pode dispensar.',{opt:true});ev+=30;
+   }
+   const l1=Math.max(ev+30,1320);
+   slim('leisure',ev,l1,'Lazer, banho e preparar o dia seguinte');
+   slim('wind',l1,l1+60,'Diminuir o ritmo e se preparar para dormir');
+   slim('sleep',l1+60,1440,'Dormir — 8 horas de sono',{noEnd:true});
   }
-  if(s.studied==='some'&&s.status!=='working'&&s.status!=='tired') summary+=' Você já estudou um pouco: considere o primeiro bloco como revisão, sem recomeçar do zero.';
-  $r('routineSummary').textContent=summary;
-  $r('routinePlan').innerHTML=items.join('');
+
+  const items=it.filter(x=>x.a<1440).map(x=>Object.assign(x,{b:Math.min(x.b,1440)})).sort((x,y)=>x.a-y.a);
+  items.forEach(x=>{x.s=x.b<=now?'past':(x.a<=now?'now':'future')});
+  const cur=items.find(x=>x.s==='now'),nxt=items.find(x=>x.s==='future'&&x.kind==='main');
+
+  const ph=phaseOf(iso),dd=daysToExam(date);
+  const head=DAYS[dow]+', '+pad(date.getDate())+'/'+pad(date.getMonth()+1)+(ph?' · '+ph:'')+(dd>0?' · faltam '+dd+' dia'+(dd>1?'s':'')+' para a prova':dd===0?' · hoje é a prova!':'');
+  const lines=['<b>'+head+'</b>'];
+  if(cur){const r=cur.b-now,left=(cur.noEnd||cur.b>=1440)?'':' (até '+fmt(cur.b)+' · faltam '+(r>=60?Math.floor(r/60)+'h'+(r%60?pad(r%60):''):r+' min')+')';
+   lines.push('Agora ('+fmt(now)+'): '+cur.t+left+(nxt?'. Próximo: '+nxt.t+' às '+fmt(nxt.a)+'.':'.'))}
+  else if(nxt)lines.push('Agora ('+fmt(now)+') · próximo: '+nxt.t+' às '+fmt(nxt.a)+'.');
+  if(rescue&&rescue.s!=='past')lines.push('Os blocos de hoje ficaram para trás — sem culpa: coloquei um bloco de resgate às '+fmt(rescue.a)+'.');
+  if(mode==='tight'&&!exam&&!travel)lines.push('Dia apertado: só os 2 primeiros blocos são prioritários; o resto vira bônus.');
+  if(mode==='bad'&&!exam&&!travel)lines.push('Dia péssimo: 1 bloco de 25 minutos, se possível, e descanso sem culpa.');
+  if(!exam&&!travel)lines.push('Amanhã ('+DAYS[(dow+1)%7]+'): '+PLAN[(dow+1)%7].focus+'.');
+  $r('routineSummary').innerHTML=lines.join('<br>');
+
+  const vis=items.filter(x=>s.showPast||x.s!=='past');
+  $r('routinePlan').innerHTML=vis.length?vis.map(x=>rowHTML(x,ck)).join(''):'<div class="planEmpty">O dia de hoje já terminou — descanse bem. 💗<br>Marque “mostrar também o que já passou” para rever o dia.</div>';
  };
+
  load();
- // O horário começa na hora de agora, pode ser editado à mão, e o plano acompanha as mudanças.
- // qualquer mudança nos campos atualiza o plano na hora
- ['routineNow','routineWorkEnd','routineStatus','routineStudied'].forEach(id=>{
-  const el=$r(id);const go=()=>{if(!$r('routineNow').value||!$r('routineWorkEnd').value)return;buildRoutine()};
-  el.addEventListener('change',go);
- });
+ ['routineNow','routineWorkEnd','routineStatus','routineStudied'].forEach(id=>$r(id).addEventListener('change',()=>buildRoutine()));
+ $r('routineShowPast').addEventListener('change',()=>buildRoutine(false));
  buildRoutine(false);
 })();
 </script>
