@@ -334,8 +334,8 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
  <p class="routineIntro">Ajuste conforme sua realidade. O plano se adapta ao horário, ao trabalho e à energia do dia — sem culpa quando surgir um imprevisto.</p>
  </div>
  <div class="routineFields">
-  <div><label for="routineNow">Horário atual</label><input id="routineNow" type="time"></div>
-  <div><label for="routineWorkEnd">Termino o trabalho às</label><input id="routineWorkEnd" type="time" value="19:00"></div>
+  <div><label for="routineNow">Horário atual</label><select id="routineNow"></select></div>
+  <div><label for="routineWorkEnd">Termino o trabalho às</label><select id="routineWorkEnd"></select></div>
   <div class="full"><label for="routineStatus">Hoje eu...</label><select id="routineStatus"><option value="working">ainda estou trabalhando</option><option value="free">já estou livre</option><option value="tired">estou muito cansada</option></select></div>
   <div class="full"><label for="routineStudied">Estudo feito hoje</label><select id="routineStudied"><option value="none">ainda não estudei</option><option value="some">já estudei um pouco</option><option value="done">já fiz meu bloco principal</option></select></div>
  </div>
@@ -1107,17 +1107,17 @@ else onAuthStateChanged(auth,u=>{
  const fromM=n=>{n=((Math.round(n)%1440)+1440)%1440;return pad(Math.floor(n/60))+':'+pad(n%60)};
  const fmt=n=>fromM(n);
  const nowStr=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
- let touched=false;
- const setNow=()=>{$r('routineNow').value=nowStr();touched=false};
+ const fillTimes=sel=>{let h='';for(let m=0;m<1440;m+=5)h+=`<option value="${fromM(m)}">${fromM(m)}</option>`;sel.innerHTML=h};
+ const setSel=(sel,v)=>{if(![...sel.options].some(o=>o.value===v)){const op=[...sel.options],i=op.findIndex(x=>x.value>v);sel.add(new Option(v,v),i<0?null:op[i])}sel.value=v};
+ const setNow=()=>setSel($r('routineNow'),nowStr());
  function state(){return {now:$r('routineNow').value,workEnd:$r('routineWorkEnd').value,status:$r('routineStatus').value,studied:$r('routineStudied').value,checks:JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}}
  function save(){const s=state();localStorage.setItem(KEY,JSON.stringify({now:s.now,workEnd:s.workEnd,status:s.status,studied:s.studied}));}
- function load(){setNow();try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');if(s.workEnd)$r('routineWorkEnd').value=s.workEnd;if(s.status)$r('routineStatus').value=s.status;if(s.studied)$r('routineStudied').value=s.studied}catch(e){} }
+ function load(){fillTimes($r('routineNow'));fillTimes($r('routineWorkEnd'));$r('routineWorkEnd').value='19:00';setNow();try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');if(s.workEnd)setSel($r('routineWorkEnd'),s.workEnd);if(s.status)$r('routineStatus').value=s.status;if(s.studied)$r('routineStudied').value=s.studied}catch(e){} }
  function item(id,time,title,desc){const checks=state().checks;const t=time.split('–');return `<label class="planItem ${checks[id]?'done':''}"><span class="planTime"><b>${t[0]}</b><small>até ${t[1]}</small></span><span class="planBody"><span class="planTitle">${title}</span><span class="planDesc">${desc}</span></span><input type="checkbox" ${checks[id]?'checked':''} onchange="routineToggle('${id}',this.checked)"></label>`}
  window.routineToggle=(id,v)=>{let c={};try{c=JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}catch(e){}c[id]=v;localStorage.setItem(KEY+'checks',JSON.stringify(c));buildRoutine(false)};
  window.routineUseNow=()=>{setNow();buildRoutine()};
  window.routineResetChecks=()=>{localStorage.removeItem(KEY+'checks');buildRoutine(false)};
  window.buildRoutine=(persist=true)=>{
-  if(persist&&!touched)setNow();
   if(persist)save();
   const s=state(),now=toM(s.now),end=toM(s.workEnd),items=[];let summary='';
   const add=(id,a,b,title,desc)=>items.push(item(id,fmt(a)+'–'+fmt(b),title,desc));
@@ -1150,11 +1150,10 @@ else onAuthStateChanged(auth,u=>{
  };
  load();
  // O horário começa na hora de agora, pode ser editado à mão, e o plano acompanha as mudanças.
- $r('routineNow').addEventListener('input',()=>{touched=true});
  // qualquer mudança nos campos atualiza o plano na hora
  ['routineNow','routineWorkEnd','routineStatus','routineStudied'].forEach(id=>{
   const el=$r(id);const go=()=>{if(!$r('routineNow').value||!$r('routineWorkEnd').value)return;buildRoutine()};
-  el.addEventListener('input',go);el.addEventListener('change',go);
+  el.addEventListener('change',go);
  });
  buildRoutine(false);
 })();
