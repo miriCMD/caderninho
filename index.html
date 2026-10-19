@@ -43,14 +43,14 @@ background-image:linear-gradient(90deg,transparent 0 var(--ml),var(--margin) var
 .hidden{display:none!important}
 
 /* barra do topo (fixa) */
-.topbar{position:sticky;top:calc(10px + var(--st));z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;margin-bottom:18px;background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);transition:padding .2s}
+.topbar{position:sticky;top:calc(10px + var(--st));z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;margin-bottom:18px;background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);height:84px;transition:box-shadow .2s;-webkit-transform:translateZ(0);transform:translateZ(0)}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .avatar{width:58px;height:58px;flex:none;border-radius:50%;object-fit:cover;background:var(--soft);border:3px solid var(--accent);cursor:pointer;display:block;transition:width .2s,height .2s,transform .2s}
 .avatar:hover{transform:rotate(-4deg) scale(1.05)}
 .who{min-width:0}
 h1{font:700 36px/1 var(--title);margin:0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:font-size .2s}
 .subtitle{margin:2px 0 0;color:var(--muted);font-size:16px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topbar.compact{padding:6px 12px}
+.topbar.compact{box-shadow:0 10px 28px rgba(0,0,0,.16)}
 .topbar.compact .avatar{width:42px;height:42px}
 .topbar.compact h1{font-size:28px}
 .topbar.compact .subtitle{display:none}
@@ -226,20 +226,40 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
 
 
 /* rotina guiada — cronograma flexível */
-.routineCard{margin:0 0 14px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
-.routineIntro{color:var(--muted);margin:-3px 0 14px}.routineFields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.routineFields .wide{grid-column:span 2}
-.routineActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.routinePlan{margin-top:16px;display:grid;gap:8px}
-.planItem{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 12px;background:var(--solid);border:1px solid var(--border);border-radius:13px}
-.planItem input{width:19px;height:19px;margin:4px 0 0;accent-color:var(--accent)}.planItem.done{opacity:.65}.planItem.done .planTitle{text-decoration:line-through}
-.planTime{font-weight:700;color:var(--accent);white-space:nowrap}.planTitle{font-weight:700}.planDesc{font-size:15px;color:var(--muted)}
-.tomorrowPlan{margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--soft)}.tomorrowPlan h3{font:700 25px/1.1 var(--title);margin:0 0 8px}.tomorrowPlan ul{margin:6px 0 0;padding-left:22px}
+.routineCard{margin:0 0 14px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+.routineHead{margin-bottom:14px}.routineHead h2{margin-bottom:6px}
+.routineIntro{color:var(--muted);margin:0;max-width:780px}
+.routineFields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:14px;background:var(--soft);border-radius:14px}
+.routineFields label{font-size:15px;margin-bottom:4px}
+.lblHint{color:var(--faint);font-size:13px}
+.routineFields input,.routineFields select{height:44px;padding:7px 10px}
+.routineActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.routineActions button{white-space:normal;line-height:1.2}
+#routineSummary{margin-top:14px;padding:10px 14px;border-left:4px solid var(--accent);border-radius:0 12px 12px 0;background:var(--solid);color:var(--label);font-size:16px}
+#routineSummary:empty{display:none}
+.routinePlan{margin-top:14px;display:grid;gap:10px}
+.planItem{display:grid;grid-template-columns:78px minmax(0,1fr) 26px;gap:12px;align-items:center;margin:0;padding:10px 14px 10px 10px;background:var(--solid);color:var(--ink);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:border-color .15s,opacity .2s}
+.planItem:hover{border-color:var(--accent)}
+.planTime{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7px 4px;border-radius:10px;background:var(--soft);line-height:1.1}
+.planTime b{font:700 26px/1 var(--title);color:var(--accent)}
+.planTime small{font-size:13px;color:var(--muted);margin-top:3px;white-space:nowrap}
+.planBody{min-width:0}.planTitle{display:block;font-weight:700;line-height:1.25}.planDesc{display:block;font-size:15px;color:var(--muted);margin-top:2px;line-height:1.3}
+.planItem input{width:22px;height:22px;margin:0;padding:0;justify-self:end;accent-color:var(--accent)}
+.planItem.done{opacity:.6}.planItem.done .planTitle{text-decoration:line-through}
+.tomorrowPlan{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--soft)}.tomorrowPlan h3{font:700 25px/1.1 var(--title);margin:0 0 8px}.tomorrowPlan ul{margin:6px 0 0;padding-left:22px}
 @media(max-width:850px){.routineFields{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:480px){.routineFields{grid-template-columns:1fr}.routineFields .wide{grid-column:span 1}.planItem{grid-template-columns:24px minmax(0,1fr)}.planTime{grid-column:2}}
+@media(max-width:480px){
+ .routineCard{padding:16px 14px}
+ .routineFields{padding:12px;gap:10px}.routineFields .full{grid-column:1/-1}
+ .routineActions{display:grid;grid-template-columns:1fr 1fr}.routineActions .primary{grid-column:1/-1}
+ .planItem{grid-template-columns:62px minmax(0,1fr) 24px;gap:10px;padding:9px 12px 9px 9px}
+ .planTime b{font-size:22px}.planTime small{font-size:12px}
+}
 
 @media(max-width:850px),(pointer:coarse){.fsBtn{display:inline-flex}}
 @media(max-width:850px){
- :root{--ml:26px}
- .wrap{padding:calc(8px + var(--st)) 12px calc(110px + var(--sb)) calc(var(--ml) + 12px)}
+ :root{--ml:10px}
+ .wrap{padding:calc(8px + var(--st)) 16px calc(110px + var(--sb)) 16px}
  .dashboard,.grid,.calWrap{grid-template-columns:1fr}
  #dayDetail{margin-top:0}
  .timerTop{flex-direction:column;gap:14px}
@@ -249,7 +269,7 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
  .timerBtns .big{min-width:0}
 }
 @media(max-width:600px){
- .topbar{top:calc(6px + var(--st));padding:8px 10px;border-radius:18px;gap:8px}
+ .topbar{top:calc(6px + var(--st));padding:8px 10px;border-radius:18px;gap:8px;height:70px}
  .topRight{gap:6px}
  .avatar{width:48px;height:48px}
  h1{font-size:28px}.subtitle{font-size:14px}
@@ -257,6 +277,9 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
  .topbar.compact h1{font-size:24px}
  .sync .sText{display:none}
  .iconBtn{width:40px;height:40px}
+ .wrap{padding-left:12px;padding-right:12px}
+ .card>h2,.routineHead h2{display:table;margin-left:auto;margin-right:auto}
+ .routineHead{text-align:center}
  .quote{font-size:30px}
  .quoteCard{margin:12px 0 20px;padding:20px 16px 10px}
  .row{grid-template-columns:1fr}.row3{grid-template-columns:repeat(3,1fr)}
@@ -306,13 +329,15 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
 </section>
 
 <section class="routineCard" id="routineCard">
+ <div class="routineHead">
  <h2>Minha rotina de hoje ✦</h2>
  <p class="routineIntro">Ajuste conforme sua realidade. O plano se adapta ao horário, ao trabalho e à energia do dia — sem culpa quando surgir um imprevisto.</p>
+ </div>
  <div class="routineFields">
-  <div><label for="routineNow">Horário atual</label><input id="routineNow" type="time" value="16:34"></div>
+  <div><label for="routineNow">Horário atual <span class="lblHint">(toque = agora)</span></label><input id="routineNow" type="time" title="Toque para preencher com a hora de agora"></div>
   <div><label for="routineWorkEnd">Termino o trabalho às</label><input id="routineWorkEnd" type="time" value="19:00"></div>
-  <div><label for="routineStatus">Hoje eu...</label><select id="routineStatus"><option value="working">ainda estou trabalhando</option><option value="free">já estou livre</option><option value="tired">estou muito cansada</option></select></div>
-  <div><label for="routineStudied">Estudo feito hoje</label><select id="routineStudied"><option value="none">ainda não estudei</option><option value="some">já estudei um pouco</option><option value="done">já fiz meu bloco principal</option></select></div>
+  <div class="full"><label for="routineStatus">Hoje eu...</label><select id="routineStatus"><option value="working">ainda estou trabalhando</option><option value="free">já estou livre</option><option value="tired">estou muito cansada</option></select></div>
+  <div class="full"><label for="routineStudied">Estudo feito hoje</label><select id="routineStudied"><option value="none">ainda não estudei</option><option value="some">já estudei um pouco</option><option value="done">já fiz meu bloco principal</option></select></div>
  </div>
  <div class="routineActions"><button class="primary" onclick="buildRoutine()">Montar / atualizar meu plano</button><button onclick="routineUseNow()">Usar horário atual</button><button onclick="routineResetChecks()">Desmarcar tarefas</button></div>
  <div id="routineSummary" class="hint" aria-live="polite"></div>
@@ -1032,7 +1057,10 @@ document.addEventListener("keydown",e=>{
  if(e.key==="Escape"){const o=[...document.querySelectorAll(".modal.open")];if(o.length)closeModal(o[o.length-1].id);return}
  if(e.code==="Space"&&user&&!e.target.closest("input,textarea,select,button,.btn")&&!document.querySelector(".modal.open")){e.preventDefault();startPause()}
 });
-window.addEventListener("scroll",()=>$("topbar").classList.toggle("compact",window.scrollY>40),{passive:true});
+(function(){let c=false,t=false;
+ function u(){t=false;const y=Math.max(0,window.scrollY||0);const n=c?y>12:y>60;if(n!==c){c=n;$("topbar").classList.toggle("compact",c)}}
+ window.addEventListener("scroll",()=>{if(!t){t=true;requestAnimationFrame(u)}},{passive:true});u();
+})();
 
 /* ---------- início ---------- */
 function setTodayLabel(){$("todayLabel").textContent=cap(new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"}))}
@@ -1078,14 +1106,18 @@ else onAuthStateChanged(auth,u=>{
  const toM=t=>{if(!t||!t.includes(':'))return 0;const [h,m]=t.split(':').map(Number);return h*60+m};
  const fromM=n=>{n=((Math.round(n)%1440)+1440)%1440;return pad(Math.floor(n/60))+':'+pad(n%60)};
  const fmt=n=>fromM(n);
+ const nowStr=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
+ let touched=false;
+ const setNow=()=>{$r('routineNow').value=nowStr();touched=false};
  function state(){return {now:$r('routineNow').value,workEnd:$r('routineWorkEnd').value,status:$r('routineStatus').value,studied:$r('routineStudied').value,checks:JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}}
  function save(){const s=state();localStorage.setItem(KEY,JSON.stringify({now:s.now,workEnd:s.workEnd,status:s.status,studied:s.studied}));}
- function load(){try{const raw=localStorage.getItem(KEY);const s=JSON.parse(raw||'{}');if(s.now)$r('routineNow').value=s.now;else {const d=new Date();$r('routineNow').value=pad(d.getHours())+':'+pad(d.getMinutes())}if(s.workEnd)$r('routineWorkEnd').value=s.workEnd;if(s.status)$r('routineStatus').value=s.status;if(s.studied)$r('routineStudied').value=s.studied}catch(e){} }
- function item(id,time,title,desc){const checks=state().checks;return `<label class="planItem ${checks[id]?'done':''}"><input type="checkbox" ${checks[id]?'checked':''} onchange="routineToggle('${id}',this.checked)"><span><span class="planTitle">${title}</span><br><span class="planDesc">${desc}</span></span><span class="planTime">${time}</span></label>`}
+ function load(){setNow();try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');if(s.workEnd)$r('routineWorkEnd').value=s.workEnd;if(s.status)$r('routineStatus').value=s.status;if(s.studied)$r('routineStudied').value=s.studied}catch(e){} }
+ function item(id,time,title,desc){const checks=state().checks;const t=time.split('–');return `<label class="planItem ${checks[id]?'done':''}"><span class="planTime"><b>${t[0]}</b><small>até ${t[1]}</small></span><span class="planBody"><span class="planTitle">${title}</span><span class="planDesc">${desc}</span></span><input type="checkbox" ${checks[id]?'checked':''} onchange="routineToggle('${id}',this.checked)"></label>`}
  window.routineToggle=(id,v)=>{let c={};try{c=JSON.parse(localStorage.getItem(KEY+'checks')||'{}')}catch(e){}c[id]=v;localStorage.setItem(KEY+'checks',JSON.stringify(c));buildRoutine(false)};
- window.routineUseNow=()=>{const d=new Date();$r('routineNow').value=pad(d.getHours())+':'+pad(d.getMinutes());buildRoutine()};
+ window.routineUseNow=()=>{setNow();buildRoutine()};
  window.routineResetChecks=()=>{localStorage.removeItem(KEY+'checks');buildRoutine(false)};
  window.buildRoutine=(persist=true)=>{
+  if(persist&&!touched)setNow();
   if(persist)save();
   const s=state(),now=toM(s.now),end=toM(s.workEnd),items=[];let summary='';
   const add=(id,a,b,title,desc)=>items.push(item(id,fmt(a)+'–'+fmt(b),title,desc));
@@ -1117,7 +1149,9 @@ else onAuthStateChanged(auth,u=>{
   $r('routinePlan').innerHTML=items.join('');
  };
  load();
- // O campo vem preenchido com o horário informado na conversa; se abrir em outro dia, o botão “Usar horário atual” atualiza.
+ // Ao tocar no campo de horário, ele vira a hora de agora (sem montar o plano); se a pessoa editar, respeitamos.
+ $r('routineNow').addEventListener('focus',setNow);
+ $r('routineNow').addEventListener('input',()=>{touched=true});
  buildRoutine(false);
 })();
 </script>
