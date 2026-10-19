@@ -334,7 +334,7 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
  <p class="routineIntro">Ajuste conforme sua realidade. O plano se adapta ao horário, ao trabalho e à energia do dia — sem culpa quando surgir um imprevisto.</p>
  </div>
  <div class="routineFields">
-  <div><label for="routineNow">Horário atual <span class="lblHint">(toque = agora)</span></label><input id="routineNow" type="time" title="Toque para preencher com a hora de agora"></div>
+  <div><label for="routineNow">Horário atual</label><input id="routineNow" type="time"></div>
   <div><label for="routineWorkEnd">Termino o trabalho às</label><input id="routineWorkEnd" type="time" value="19:00"></div>
   <div class="full"><label for="routineStatus">Hoje eu...</label><select id="routineStatus"><option value="working">ainda estou trabalhando</option><option value="free">já estou livre</option><option value="tired">estou muito cansada</option></select></div>
   <div class="full"><label for="routineStudied">Estudo feito hoje</label><select id="routineStudied"><option value="none">ainda não estudei</option><option value="some">já estudei um pouco</option><option value="done">já fiz meu bloco principal</option></select></div>
@@ -1149,9 +1149,13 @@ else onAuthStateChanged(auth,u=>{
   $r('routinePlan').innerHTML=items.join('');
  };
  load();
- // Ao tocar no campo de horário, ele vira a hora de agora (sem montar o plano); se a pessoa editar, respeitamos.
- $r('routineNow').addEventListener('focus',setNow);
+ // O horário começa na hora de agora, pode ser editado à mão, e o plano acompanha as mudanças.
  $r('routineNow').addEventListener('input',()=>{touched=true});
+ // qualquer mudança nos campos atualiza o plano na hora
+ ['routineNow','routineWorkEnd','routineStatus','routineStudied'].forEach(id=>{
+  const el=$r(id);const go=()=>{if(!$r('routineNow').value||!$r('routineWorkEnd').value)return;buildRoutine()};
+  el.addEventListener('input',go);el.addEventListener('change',go);
+ });
  buildRoutine(false);
 })();
 </script>
