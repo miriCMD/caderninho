@@ -388,7 +388,7 @@ td.empty{text-align:center;color:var(--faint);padding:18px;white-space:normal}
    <div class="timerSide">
     <div class="today" id="todayLabel"></div>
     <span id="timerStatus" class="pill"></span>
-    <label for="timerSubject">Estudando agora</label>
+    <label for="timerSubject">Estudando agora <span id="timerAutoTag" class="lblHint"></span></label>
     <select id="timerSubject" onchange="setTimerSubject(this.value)"></select>
     <label for="timerTask" style="margin-top:10px">Tarefa específica deste bloco</label>
     <input id="timerTask" type="text" maxlength="140" placeholder="Ex.: revisar o resumo e responder 5 questões">
@@ -739,6 +739,7 @@ function subscribe(){
   timer=Object.assign(idleTimer(),snap.data()||{});
   if(subjects.includes(timer.subject))$("timerSubject").value=timer.subject;
   lastClock="";updateTimerUI();
+  if(window.routineSyncTimer)window.routineSyncTimer();
  },cloudError));
 }
 async function maybeMigrate(){
@@ -770,7 +771,7 @@ function startPause(){
  else notify("Cronômetro pausado",`Tempo até agora: ${lastClock}`,"info");
 }
 function setTimerSubject(v){timer.subject=v;saveTimerState();notify("Matéria alterada",shortSub(v),"info")}
-function resetTimer(){timer=idleTimer();saveTimerState();updateTimerUI()}
+function resetTimer(){timer=idleTimer();saveTimerState();updateTimerUI();if(window.routineSyncTimer)window.routineSyncTimer()}
 async function discardTimer(){
  if(timer.state==="idle")return;
  if(!await ask({title:"Descartar sessão?",text:"O tempo desta sessão não será salvo.",lines:[["Matéria",timer.subject],["Tempo",lastClock]],ok:"Descartar",danger:true}))return;
@@ -1090,6 +1091,7 @@ function init(){
  setupFullscreen();makeTouchIcon();
  const td=localISO();document.querySelectorAll(".phase").forEach(p=>p.classList.toggle("now",td>=p.dataset.start&&td<=p.dataset.end));
  render();updateTimerUI();
+ if(window.routineSyncTimer)window.routineSyncTimer();
  setInterval(()=>{if(localISO()!==dayKey){dayKey=localISO();setTodayLabel();render()}},60000);
  document.addEventListener("visibilitychange",updateTimerUI);
 }
@@ -1128,7 +1130,23 @@ else onAuthStateChanged(auth,u=>{
  const writeChecks=c=>{try{localStorage.setItem(KEY+'checks',JSON.stringify(c))}catch(e){}};
  const fillTimes=(sel,extra)=>{let h=extra||'';for(let m=0;m<1440;m+=5)h+=`<option value="${fromM(m)}">${fromM(m)}</option>`;sel.innerHTML=h};
  const setSel=(sel,v)=>{if(![...sel.options].some(o=>o.value===v)){const op=[...sel.options],i=op.findIndex(x=>x.value>v);sel.add(new Option(v,v),i<0?null:op[i])}sel.value=v};
- const setNow=()=>setSel($r('routineNow'),nowStr());
+ const setNow=()=>{const sel=$r('routineNow'),v=nowStr();[...sel.options].forEach(o=>{if(toM(o.value)%5&&o.value!==v&&o.remove)o.remove()});setSel(sel,v)};
+ const SUBJ=[[/^Administração Pública/,'Conhecimentos Específicos — Administração Pública'],[/^Direito Administrativo/,'Conhecimentos Específicos — Direito Administrativo'],[/^Constitucional/,'Conhecimentos Específicos — Direito Constitucional'],[/^Legislação/,'Legislação'],[/^Português/,'Língua Portuguesa'],[/^Raciocínio/,'Raciocínio Lógico'],[/^Informática/,'Noções de Informática']];
+ const subOf=t=>{const m=SUBJ.find(p=>p[0].test(t));return m?m[1]:'Revisão / Simulado'};
+ const taskOf=t=>{const i=t.indexOf(' — ');return i<0?t:t.slice(i+3)};
+ let manualKey=null,curTarget=null,nowManual=false;
+ function syncTimer(force){
+  const card=$r('timerCard'),sel=$r('timerSubject'),task=$r('timerTask'),tag=$r('timerAutoTag');
+  if(!card||!sel||!task||!curTarget||!sel.options.length)return;
+  if(card.dataset.state&&card.dataset.state!=='idle')return;
+  const key=isoOf(new Date())+':'+curTarget.id;
+  if(force)manualKey=null;
+  if(manualKey===key)return;
+  if(hasOpt(sel,curTarget.sub))sel.value=curTarget.sub;
+  task.value=curTarget.task;
+  if(tag)tag.textContent='· sugerido pela rotina';
+ }
+ window.routineSyncTimer=syncTimer;
  const hasOpt=(sel,v)=>[...sel.options].some(o=>o.value===v);
 
  /* ---------- dados da rotina (da conversa do modo guerra) ---------- */
@@ -1209,7 +1227,7 @@ else onAuthStateChanged(auth,u=>{
   return `<label class="planItem ${x.s} ${x.opt?'opt':''} ${done?'done':''}"><span class="planTime"><b>${fmt(x.a)}</b><small>até ${fmt(x.b)}</small></span><span class="planBody"><span class="planTitle">${x.t}${x.opt?' <em class="optTag">opcional</em>':''}${nowB}</span><span class="planDesc">${x.d}</span></span><input type="checkbox" ${done?'checked':''} onchange="routineToggle('${x.id}',this.checked)"></label>`;
  }
  window.routineToggle=(id,v)=>{const c=readChecks(),k=isoOf(new Date())+':'+id;if(v)c[k]=true;else delete c[k];writeChecks(c);buildRoutine(false)};
- window.routineUseNow=()=>{setNow();buildRoutine()};
+ window.routineUseNow=()=>{nowManual=false;setNow();buildRoutine();syncTimer(true)};
  window.routineResetChecks=()=>{const c=readChecks(),p=isoOf(new Date())+':';Object.keys(c).forEach(k=>{if(k.indexOf(p)===0)delete c[k]});writeChecks(c);buildRoutine(false)};
 
  window.buildRoutine=(persist=true)=>{
@@ -1240,9 +1258,9 @@ else onAuthStateChanged(auth,u=>{
    main('ex',450,480,P.ex.t,P.ex.d,{opt:mode==='bad'});
    slim('cafe',480,510,'Café da manhã e organizar a mesa');
    const bl=P.b.map(x=>x.sim?{t:'Simulado',d:`Simulado de ${simN(iso)} questões, cronometrado e sem consultar nada.`}:x);
-   const B=(i,a,b)=>main('b'+(i+1),a,b,bl[i].t,bl[i].d,{study:true,opt:!!bl[i].opt||(mode==='tight'&&i>=2)});
+   const B=(i,a,b)=>main('b'+(i+1),a,b,bl[i].t,bl[i].d,{study:true,opt:!!bl[i].opt||(mode==='tight'&&i>=2),sub:subOf(bl[i].t),task:taskOf(bl[i].t)});
    if(mode==='bad'){
-    main('b1',510,535,'Bloco mínimo (25 min) — '+bl[0].t,'Faça só o essencial: 5 questões fáceis ou uma revisão rápida. Pode parar antes se estiver no limite.',{study:true});
+    main('b1',510,535,'Bloco mínimo (25 min) — '+bl[0].t,'Faça só o essencial: 5 questões fáceis ou uma revisão rápida. Pode parar antes se estiver no limite.',{study:true,sub:subOf(bl[0].t),task:taskOf(bl[0].t)});
     slim('rest',535,750,'Descanso sem culpa — sono e recuperação também contam');
    }else{
     B(0,510,560);slim('p1',560,570,'Pausa');
@@ -1264,14 +1282,14 @@ else onAuthStateChanged(auth,u=>{
    slim('dinner',we,we+60,'Jantar e desacelerar');
    let ev=we+60;
    if(mode==='bad'){
-    main('night',ev,ev+25,'Mínimo gentil (25 min, opcional)','Se houver energia, faça 5 questões fáceis. Se não houver, descansar também faz parte do plano.',{opt:true});ev+=25;
+    main('night',ev,ev+25,'Mínimo gentil (25 min, opcional)','Se houver energia, faça 5 questões fáceis. Se não houver, descansar também faz parte do plano.',{opt:true,sub:'Revisão / Simulado',task:'Questões fáceis'});ev+=25;
    }else if(missed.length&&lvl==='none'){
     const len=mode==='tight'?25:50;
-    main('rescue',ev,ev+len,'Bloco de resgate — '+missed[0].t,'Você ainda não teve bloco principal hoje: mini teoria + 5 questões. Se estiver exausta, reduza para 25 minutos.');rescue=it[it.length-1];ev+=len;
+    main('rescue',ev,ev+len,'Bloco de resgate — '+missed[0].t,'Você ainda não teve bloco principal hoje: mini teoria + 5 questões. Se estiver exausta, reduza para 25 minutos.',{sub:missed[0].sub,task:missed[0].task});rescue=it[it.length-1];ev+=len;
    }else if(missed.length&&lvl==='some'){
-    main('rescue',ev,ev+30,'Reforço curto (30 min) — '+missed[0].t,'Você já estudou um pouco: complete o que ficou para trás com 5 questões e correção.');ev+=30;
+    main('rescue',ev,ev+30,'Reforço curto (30 min) — '+missed[0].t,'Você já estudou um pouco: complete o que ficou para trás com 5 questões e correção.',{sub:missed[0].sub,task:missed[0].task});ev+=30;
    }else{
-    main('night',ev,ev+30,'Revisão dos erros ou questões curtas','Opcional: 30 minutos para fixar o que viu hoje. Se o dia foi pesado, pode dispensar.',{opt:true});ev+=30;
+    main('night',ev,ev+30,'Revisão dos erros ou questões curtas','Opcional: 30 minutos para fixar o que viu hoje. Se o dia foi pesado, pode dispensar.',{opt:true,sub:'Revisão / Simulado',task:'Revisão dos erros'});ev+=30;
    }
    const l1=Math.max(ev+30,1320);
    slim('leisure',ev,l1,'Lazer, banho e preparar o dia seguinte');
@@ -1281,6 +1299,8 @@ else onAuthStateChanged(auth,u=>{
 
   const items=it.filter(x=>x.a<1440).map(x=>Object.assign(x,{b:Math.min(x.b,1440)})).sort((x,y)=>x.a-y.a);
   items.forEach(x=>{x.s=x.b<=now?'past':(x.a<=now?'now':'future')});
+  curTarget=items.find(x=>x.sub&&x.s==='now')||items.find(x=>x.sub&&x.s==='future')||null;
+  syncTimer(false);
   const cur=items.find(x=>x.s==='now'),nxt=items.find(x=>x.s==='future'&&x.kind==='main');
 
   const ph=phaseOf(iso),dd=daysToExam(date);
@@ -1302,6 +1322,13 @@ else onAuthStateChanged(auth,u=>{
  load();
  ['routineNow','routineWorkEnd','routineStatus','routineStudied'].forEach(id=>$r(id).addEventListener('change',()=>buildRoutine()));
  $r('routineShowPast').addEventListener('change',()=>buildRoutine(false));
+ const markManual=()=>{if(!curTarget)return;manualKey=isoOf(new Date())+':'+curTarget.id;const t=$r('timerAutoTag');if(t)t.textContent=''};
+ if($r('timerSubject'))$r('timerSubject').addEventListener('change',markManual);
+ if($r('timerTask'))$r('timerTask').addEventListener('input',markManual);
+ $r('routineNow').addEventListener('change',()=>{nowManual=true});
+ // enquanto você não escolher outro horário, o "agora" acompanha o relógio e o cronômetro acompanha o bloco
+ const tick=()=>{if(nowManual||document.hidden)return;const a=document.activeElement;if(a&&a.id&&a.id.indexOf('routine')===0)return;if($r('routineNow').value!==nowStr()){setNow();buildRoutine(false)}};
+ setInterval(tick,30000);document.addEventListener('visibilitychange',tick);
  buildRoutine(false);
 })();
 </script>
